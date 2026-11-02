@@ -1,5 +1,7 @@
 # PR Tone Coach
 
+**Live demo:** [benchengai.github.io/demos/pr-tone-coach](https://benchengai.github.io/demos/pr-tone-coach/) (static, no API key; stored outputs of real pipeline runs)
+
 Check your own code review comment before you post it. For a draft comment,
 PR Tone Coach reports:
 
@@ -134,8 +136,8 @@ The demo needs no API key and loads instantly: it shows stored outputs of real
 pipeline runs (with their API request ids) on the synthetic test comments, the
 highlighted phrases, target and risk badges, a side-by-side diff of the
 rewrite, the token check, the re-check and the judge verdict, and Research
-basis and Limitations panels. It is a static export (`output: 'export'`) that
-can be deployed to Vercel as is; it has not been deployed.
+basis and Limitations panels. It is a static export (`output: 'export'`), live at
+https://benchengai.github.io/demos/pr-tone-coach/ (built with `DEMO_BASE_PATH=/demos/pr-tone-coach`).
 
 ## Results
 
