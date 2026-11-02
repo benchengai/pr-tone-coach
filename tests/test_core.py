@@ -186,3 +186,21 @@ def test_demo_samples_are_real_runs():
             for key in ("recheck", "judge"):
                 if key in out:
                     assert out[key]["llm"]["request_id"].startswith("req_")
+
+
+def test_precision_at_base_rate():
+    from prtone.evaluate import precision_at
+
+    # Balanced sample: recall 0.8, FPR 0.2 gives precision 0.8; at 20% prevalence it drops to 0.5.
+    assert precision_at(0.5, 0.8, 0.2) == pytest.approx(0.8)
+    assert precision_at(0.2, 0.8, 0.2) == pytest.approx(0.5)
+    assert precision_at(0.2, 0.0, 0.0) is None
+
+
+def test_side_by_side_diff_round_trips():
+    from prtone.export import side_by_side
+
+    d = side_by_side("Did you even run this? `f()` fails.", "`f()` fails on empty input.")
+    assert "".join(s["text"] for s in d["left"]) == "Did you even run this? `f()` fails."
+    assert "".join(s["text"] for s in d["right"]) == "`f()` fails on empty input."
+    assert [s["text"] for s in d["left"] if s["changed"]] == ["Did you even run this? ", "fails."]

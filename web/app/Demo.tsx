@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { DemoData, Output, Phrase, Risk, Sample, Segment, Stat, Target } from "./types";
 
 const TARGET_LABEL: Record<Target, string> = {
@@ -106,10 +106,19 @@ function OutputView({ sample, out }: { sample: Sample; out: Output }) {
       {out.phrases.length === 0 ? (
         <p className="muted">No phrase flagged.</p>
       ) : (
-        <p className="muted small">
-          {out.phrases.length} phrase{out.phrases.length > 1 ? "s" : ""}, each found verbatim in the draft
-          {out.rejected_phrases.length > 0 && `; ${out.rejected_phrases.length} quote(s) not in the draft were dropped`}.
-        </p>
+        <>
+          <ul className="phrase-list">
+            {[...out.phrases].sort((a, b) => a.start - b.start).map((p, i) => (
+              <li key={i}>
+                “{p.quote}” <span className="cue-tag">{CUE_LABEL[p.cue] ?? p.cue}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="muted small">
+            Each quote was found verbatim in the draft
+            {out.rejected_phrases.length > 0 && `; ${out.rejected_phrases.length} quote(s) not in the draft were dropped`}.
+          </p>
+        </>
       )}
 
       {out.rewrite && out.diff ? (
@@ -262,6 +271,14 @@ export default function Demo({ data, basis, limitations }: { data: DemoData; bas
     [data.samples, filter, model],
   );
   const sample = data.samples.find((s) => s.id === selected) ?? visible[0];
+  const mainRef = useRef<HTMLElement>(null);
+  const pick = (id: string) => {
+    setSelected(id);
+    // On narrow screens the result sits below the list; bring it into view.
+    if (window.matchMedia("(max-width: 860px)").matches) {
+      requestAnimationFrame(() => mainRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    }
+  };
   const out = sample?.outputs[model];
 
   return (
@@ -297,7 +314,7 @@ export default function Demo({ data, basis, limitations }: { data: DemoData; bas
           <ul className="samples">
             {visible.map((s) => (
               <li key={s.id}>
-                <button className={s.id === sample?.id ? "on" : ""} onClick={() => setSelected(s.id)}>
+                <button className={s.id === sample?.id ? "on" : ""} onClick={() => pick(s.id)}>
                   {s.outputs[model] && <RiskBadge risk={s.outputs[model].risk} small />}
                   <span className="sample-text">{s.text}</span>
                 </button>
@@ -307,7 +324,7 @@ export default function Demo({ data, basis, limitations }: { data: DemoData; bas
           </ul>
         </aside>
 
-        <section className="main">
+        <section className="main" ref={mainRef}>
           {sample && out ? (
             <>
               <div className="sample-head">

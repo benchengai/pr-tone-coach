@@ -9,23 +9,40 @@ const basis = (
       has 0 studies. Code review research exists, but the study files work that mines review comments after the fact under
       Maintenance. This tool sits earlier: the author checks a comment while writing it, before anyone reads it.
     </p>
-    <p>The checker's labels and cue types are grounded in, not validated by, this work:</p>
+    <p>The labels and cue types are grounded in, not validated by, this work:</p>
     <ul>
       <li>
-        <strong>Pushback.</strong> Egelman et al. (ICSE 2020, an included study) define pushback as the perception of
-        unnecessary interpersonal conflict while a reviewer blocks a change, and built metrics that detect it from review
-        logs at Google. → the <em>blocking without reason</em>, <em>authority appeal</em> and <em>impatience</em> cues.
+        <strong>Pushback.</strong> Egelman et al. (ICSE 2020; an included study) define pushback as the perception of
+        unnecessary interpersonal conflict while a reviewer blocks a change. They detect it from review logs, not text. →
+        the <em>risk</em> framing and the <em>blocking without reason</em> cue.
       </li>
       <li>
-        <strong>Direction of negativity.</strong> Gachechiladze et al. (ICSE NIER 2017, an included study) separated anger
-        aimed at oneself, at others and at objects in Apache Jira comments, and found most of it aimed at objects such as
-        tools or code. → the{" "}
-        <em>target</em> label (code, person, tool or process).
+        <strong>Destructive criticism.</strong> Gunawardena et al. (CSCW 2022) call negative feedback destructive when it is
+        both nonspecific and inconsiderate (harsh or sarcastic, threatening, or blaming the person). → <em>vague
+        negative</em>, <em>mocking or sarcasm</em> and <em>aimed at the person</em>; blunt but specific feedback stays low risk.
       </li>
-      {/* CITATIONS */}
       <li>
-        <strong>Cues, not emotions.</strong> Barrett et al. (2019) show that emotional states cannot be read reliably from
-        surface signals; the tool reports text features such as “condescending phrase”, never how the writer feels.
+        <strong>Incivility and toxicity.</strong> Ferreira et al. (CSCW 2021) coded uncivil features in Linux kernel review
+        emails, among them impatience, irony, mocking, name calling, threats and vulgarity. Sarker et al.&apos;s ToxiCR (TOSEM
+        2023) labels review comments toxic for insults, threats, personal attacks or swearing, and ToxiSpanSE (ESEM 2023)
+        marks the toxic words. → the <em>impatience</em>, <em>insult</em>, <em>threat</em> and <em>profanity</em> cues,
+        and the held-out human-labelled test sample.
+      </li>
+      <li>
+        <strong>Direction.</strong> Gachechiladze et al. (ICSE NIER 2017; an included study) separated anger aimed at oneself,
+        at others and at objects in Apache Jira comments, and found most of it aimed at objects such as tools or code. →
+        the <em>target</em> label.
+      </li>
+      <li>
+        <strong>Closest prior tools.</strong> Rahman et al. (FSE 2024) generate civil alternatives to uncivil review
+        comments; ToxiShield (Anindya et al., FSE 2026) filters toxic comments and rewrites them in real time. This tool
+        adds the target, pushback beyond toxicity, quotes checked against the draft, and a deterministic check that the
+        rewrite keeps every technical token.
+      </li>
+      <li>
+        <strong>Cues, not emotions.</strong> Barrett et al. (2019) show that emotional states cannot be reliably inferred
+        from facial movements. The tool takes the same caution with text: it reports features of phrases, such as a
+        condescending phrase, never how the writer feels.
       </li>
       <li>
         <strong>Law.</strong> The EU AI Act, Art. 5(1)(f), prohibits AI that infers the emotions of people at work. The tool
