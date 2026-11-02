@@ -58,7 +58,15 @@ const limitations = (
       The demo comments and their gold labels are synthetic and come from one annotator, who also wrote the prompt.
       Agreement on them is an optimistic smoke test, not a benchmark.
     </li>
-    {/* EXTERNAL-LIMITATION */}
+    <li>
+      The independent check uses human <em>toxicity</em> labels on 100 Gerrit comments (ToxiSpanSE). Toxicity is narrower
+      than pushback in one way and broader in another: a curt but civil block is not toxic, while calling code “ugly” is toxic
+      there and only medium risk here. So “high” matches only 14–19% of toxic comments, while “medium or high” matches
+      with F1 0.83–0.87.
+    </li>
+    <li>
+      The target has no “self” option: a commenter calling their own change stupid was rated as an attack on the code.
+    </li>
     <li>
       Pushback and destructive criticism are perceptions of the recipient. The checker sees only the text: not the
       relationship, the history of the change or the team&apos;s norms. A comment that is fine in one team can sting in another.

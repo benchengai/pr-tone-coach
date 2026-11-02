@@ -193,7 +193,7 @@ function fmt(s: Stat | undefined, digits = 2) {
 function Results({ data }: { data: DemoData }) {
   if (!data.summary) return null;
   const synth = Object.entries(data.summary).find(([k]) => k.startsWith("synthetic"));
-  const tox = Object.entries(data.summary).find(([k]) => k.startsWith("toxicr"));
+  const tox = Object.entries(data.summary).find(([k]) => k.startsWith("toxispanse"));
   return (
     <section className="panel" id="results">
       <h2>Results</h2>
@@ -208,14 +208,14 @@ function Results({ data }: { data: DemoData }) {
               <thead>
                 <tr>
                   <th>Model</th><th>Target macro-F1</th><th>Risk macro-F1</th><th>Quotes verified</th>
-                  <th>Rewrites keep all tokens</th><th>Rewrite re-checked low</th><th>Judge: all four</th>
+                  <th>Rewrites keep all tokens</th><th>Rewrite re-checked low</th><th>Judge: all four (run 1)</th>
                   <th>Cost / comment</th><th>Latency (s)</th>
                 </tr>
               </thead>
               <tbody>
                 {Object.entries(synth[1].models).map(([m, s]) => (
                   <tr key={m}>
-                    <td><code>{m}</code></td>
+                    <td>{m === "rules" ? "keyword baseline" : <code>{m}</code>}</td>
                     <td>{fmt(s["labels.target.macro_f1"])}</td>
                     <td>{fmt(s["labels.risk.macro_f1"])}</td>
                     <td>{fmt(s["labels.phrase_validity"])}</td>
@@ -234,23 +234,26 @@ function Results({ data }: { data: DemoData }) {
       {tox && (
         <>
           <p className="small muted">
-            Human-labelled code review comments (ToxiCR sample): {tox[1].items} comments, {tox[1].runs} run(s). Agreement
-            of “medium or high risk” with the human toxic label.
+            Held-out human-labelled Gerrit review comments (ToxiSpanSE; 50 toxic, 50 not): {tox[1].items} comments,{" "}
+            {tox[1].runs} runs per model. Agreement of “medium or high risk” with the human toxic label, and the share of
+            human-marked toxic words that a quote covers. None of these comments is shown here.
           </p>
           <div className="table-wrap">
             <table>
               <thead>
-                <tr><th>Model</th><th>Precision</th><th>Recall</th><th>F1</th><th>“High” vs toxic F1</th><th>Quotes verified</th></tr>
+                <tr><th>Model</th><th>Precision</th><th>Recall</th><th>F1</th><th>“High” vs toxic F1</th><th>Quotes verified</th><th>Toxic spans hit</th><th>Cost / comment</th></tr>
               </thead>
               <tbody>
                 {Object.entries(tox[1].models).map(([m, s]) => (
                   <tr key={m}>
-                    <td><code>{m}</code></td>
+                    <td>{m === "rules" ? "keyword baseline" : <code>{m}</code>}</td>
                     <td>{fmt(s["toxicity.flag_vs_toxic.precision"])}</td>
                     <td>{fmt(s["toxicity.flag_vs_toxic.recall"])}</td>
                     <td>{fmt(s["toxicity.flag_vs_toxic.f1"])}</td>
                     <td>{fmt(s["toxicity.high_vs_toxic.f1"])}</td>
                     <td>{fmt(s["toxicity.phrase_validity"])}</td>
+                    <td>{fmt(s["toxicity.span_hit_rate"])}</td>
+                    <td>{s["cost_per_comment_usd"] ? `$${s["cost_per_comment_usd"].mean.toFixed(5)}` : "$0"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -263,7 +266,7 @@ function Results({ data }: { data: DemoData }) {
 }
 
 export default function Demo({ data, basis, limitations }: { data: DemoData; basis: React.ReactNode; limitations: React.ReactNode }) {
-  const [model, setModel] = useState(data.models.includes("gpt-6.1-terra") ? "gpt-6.1-terra" : data.models[0]);
+  const [model, setModel] = useState(data.models.includes("gpt-6-luna") ? "gpt-6-luna" : data.models[0]);
   const [filter, setFilter] = useState<"all" | Risk>("all");
   const [selected, setSelected] = useState(data.samples[0]?.id);
   const visible = useMemo(
@@ -346,7 +349,7 @@ export default function Demo({ data, basis, limitations }: { data: DemoData; bas
         <p>The checker is a Python CLI. It reads the draft, prints the result, and never posts anything.</p>
         <pre>{`uv sync
 uv run prtone check "Did you even run this? getUser() returns null on 404."
-uv run prtone check --file draft.md --model gpt-6.1-terra --recheck
+uv run prtone check --file draft.md --model gpt-6.1-sol --recheck
 uv run prtone check --file draft.md --rules   # keyword baseline, no API key`}</pre>
       </section>
 

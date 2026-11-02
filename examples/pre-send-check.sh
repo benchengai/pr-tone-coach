@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Check your own draft code review comment before you post it. Nothing is posted.
 #
-#   examples/pre-send-check.sh draft.md                  # gpt-6.1-terra, rewrite re-checked
-#   examples/pre-send-check.sh draft.md --model gpt-6-luna
+#   examples/pre-send-check.sh draft.md                  # gpt-6-luna, rewrite re-checked
+#   examples/pre-send-check.sh draft.md --model gpt-6.1-sol
 #   examples/pre-send-check.sh draft.md --rules          # offline keyword baseline
 #
 # Exit status: 0 low risk, 3 medium or high risk, 1 the check failed.

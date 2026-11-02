@@ -21,7 +21,7 @@ on:
       model:
         description: Model
         required: false
-        default: gpt-6.1-terra
+        default: gpt-6-luna
         type: choice
         options: [gpt-6-luna, gpt-6.1-terra, gpt-6.1-sol]
 

@@ -1,7 +1,7 @@
 """Command-line entry point.
 
     prtone check "Did you even run this? getUser() returns null on 404."
-    prtone check --file draft.md --model gpt-6.1-terra
+    prtone check --file draft.md --model gpt-6.1-sol
     prtone check --file draft.md --rules            # keyword baseline, no API key
     prtone bench data/gold/synthetic_test.jsonl -m gpt-6-luna gpt-6.1-terra --runs 3
 """
@@ -144,8 +144,8 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("check", help="check one draft review comment before posting it")
     p.add_argument("comment", nargs="?", help="the draft comment text")
     p.add_argument("--file", "-f", help="read the draft from a file (- for stdin)")
-    p.add_argument("--model", "-m", default="openai:gpt-6.1-terra",
-                   help="provider:model or an OpenAI model name (default openai:gpt-6.1-terra)")
+    p.add_argument("--model", "-m", default="openai:gpt-6-luna",
+                   help="provider:model or an OpenAI model name (default openai:gpt-6-luna)")
     p.add_argument("--rules", action="store_true", help="keyword baseline only: no API call, no rewrite")
     p.add_argument("--recheck", action="store_true", help="also check the rewrite (one more call)")
     p.add_argument("--json", action="store_true", help="print the full result as JSON")
