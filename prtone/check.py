@@ -69,12 +69,15 @@ about.
 
 3. risk: how likely the draft is to read as destructive criticism or pushback.
 - high: most readers would take it as an attack: insults or contempt for the person or their \
-work, mockery of the person, profanity aimed at the person or their work, threats, or saying \
-the person does not belong on the team or near the code.
+work; rhetorical questions or sweeping statements that the person is incompetent or careless \
+("did you even...", "who taught you...", "you have no idea..."); mockery of the person; \
+profanity aimed at the person or their work; threats; or saying the person does not belong on \
+the team or near the code.
 - medium: likely to read as pushback or dismissive without attacking: vague negative \
 judgements, blocking without reasons, sarcasm about the code, condescension, impatience, \
 sweeping generalisations, appeals to authority, contempt or profanity aimed at a tool rather \
-than at the person, or criticism of the person's habits or skills without insults.
+than at the person, or remarks on a specific habit or skill gap of the person without \
+contempt ("you often forget...", "you seem unsure about...").
 - low: specific and respectful, or no criticism. Blunt but specific technical feedback is low.
 
 4. rewrite: when risk is medium or high, a version of the comment the author could post \

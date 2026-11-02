@@ -22,7 +22,7 @@ from pydantic import ValidationError
 
 from .check import check, reassemble
 from .evaluate import score_labels, score_rewrites, score_toxicity
-from .judge import judge
+from .judge import RUBRIC_VERSION, judge
 from .llm import LLMError, parse_model_spec
 
 
@@ -60,7 +60,8 @@ def run_item(item: dict, spec: str, path: Path, recheck: bool, judge_spec: str |
             changed = True
             again = check(result["rewrite"], provider, model)
             record["recheck"] = {k: again[k] for k in ("target", "risk", "phrases", "llm")}
-        if result and result["rewrite"] and judge_spec and record.get("judge", {}).get("spec") != judge_spec:
+        stale = (record.get("judge", {}).get("spec"), record.get("judge", {}).get("rubric")) != (judge_spec, RUBRIC_VERSION)
+        if result and result["rewrite"] and judge_spec and stale:
             changed = True
             verdict, meta = judge(item["text"], result["rewrite"], *parse_model_spec(judge_spec))
             record["judge"] = {"spec": judge_spec, **verdict, "llm": meta}

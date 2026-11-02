@@ -175,7 +175,14 @@ def test_demo_samples_are_real_runs():
     data = json.loads(path.read_text(encoding="utf-8"))
     assert data["samples"]
     for s in data["samples"]:
-        assert s["result"]["llm"]["request_id"] and s["result"]["llm"]["model"]
-        assert s["synthetic"] is True
-        for p in s["result"]["phrases"]:
-            assert s["result"]["draft"][p["start"]:p["end"]] == p["quote"]
+        assert s["synthetic"] is True and s["outputs"]
+        for out in s["outputs"].values():
+            assert out["llm"]["request_id"].startswith("req_") and out["llm"]["model"]
+            for p in out["phrases"]:
+                assert s["text"][p["start"]:p["end"]] == p["quote"]
+            if out["rewrite"]:
+                assert "".join(x["text"] for x in out["diff"]["left"]) == s["text"]
+                assert "".join(x["text"] for x in out["diff"]["right"]) == out["rewrite"]
+            for key in ("recheck", "judge"):
+                if key in out:
+                    assert out[key]["llm"]["request_id"].startswith("req_")

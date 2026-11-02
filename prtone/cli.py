@@ -16,7 +16,7 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-RISK_EXIT = {"low": 0, "medium": 0, "high": 3}
+RISK_LEVEL = {"low": 0, "medium": 1, "high": 2}
 
 
 def load_dotenv(path: Path) -> None:
@@ -95,7 +95,9 @@ def cmd_check(args) -> int:
         print(f"check failed: {message}", file=sys.stderr)
         return 1
     print(json.dumps(result, indent=2, ensure_ascii=False) if args.json else render_text(result, color=args.color))
-    return RISK_EXIT[result["risk"]] if args.fail_on_high else 0
+    if args.fail_on and RISK_LEVEL[result["risk"]] >= RISK_LEVEL[args.fail_on]:
+        return 3
+    return 0
 
 
 def cmd_bench(args) -> int:
@@ -109,6 +111,28 @@ def cmd_bench(args) -> int:
         Path(args.report).parent.mkdir(parents=True, exist_ok=True)
         Path(args.report).write_text(report, encoding="utf-8")
         print(f"wrote {args.report}", file=sys.stderr)
+    return 0
+
+
+SUMMARY_KEYS = ("labels.target.macro_f1", "labels.risk.macro_f1", "labels.flag.f1", "labels.high_recall",
+                "labels.phrase_validity", "labels.phrase_hit_rate", "rewrites.tokens_all_kept",
+                "rewrites.after_low", "rewrites.judge_pass", "cost_per_comment_usd", "latency_mean_s",
+                "toxicity.high_vs_toxic.f1", "toxicity.flag_vs_toxic.f1", "toxicity.flag_vs_toxic.precision",
+                "toxicity.flag_vs_toxic.recall", "toxicity.phrase_validity", "toxicity.span_hit_rate")
+
+
+def cmd_export_demo(args) -> int:
+    from .export import export_demo
+
+    summary = {}
+    for path in args.results or []:
+        results = _read(Path(path))
+        table = summary.setdefault(Path(results["gold"]).stem, {"items": results["items"],
+                                                                 "runs": results["runs_per_model"], "models": {}})
+        for spec, m in results["models"].items():
+            table["models"][spec.split(":")[-1]] = {k: m["summary"][k] for k in SUMMARY_KEYS if k in m["summary"]}
+    data = export_demo(Path(args.gold), Path(args.bench_dir), args.models, args.run, Path(args.out), summary)
+    print(f"wrote {args.out}: {len(data['samples'])} samples", file=sys.stderr)
     return 0
 
 
@@ -127,7 +151,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--json", action="store_true", help="print the full result as JSON")
     p.add_argument("--color", action=argparse.BooleanOptionalAction, default=sys.stdout.isatty(),
                    help="highlight phrases with ANSI colours (default: when printing to a terminal)")
-    p.add_argument("--fail-on-high", action="store_true", help="exit with status 3 when the risk is high")
+    p.add_argument("--fail-on", choices=("medium", "high"),
+                   help="exit with status 3 when the risk is at or above this level (for scripts)")
     p.set_defaults(func=cmd_check)
 
     p = sub.add_parser("bench", help="score models on a gold set, several runs each")
@@ -141,6 +166,15 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--out", "-o", required=True, help="folder for cached per-item results")
     p.add_argument("--report", help="also write the markdown table here")
     p.set_defaults(func=cmd_bench)
+
+    p = sub.add_parser("export-demo", help="export stored bench outputs for the web demo")
+    p.add_argument("gold", help="JSONL gold set the bench ran on")
+    p.add_argument("--bench-dir", required=True, help="bench output folder (the --out of `bench`)")
+    p.add_argument("--models", "-m", nargs="+", required=True)
+    p.add_argument("--run", type=int, default=1, help="which run to show (default 1, the judged run)")
+    p.add_argument("--results", nargs="*", help="bench results.json files for the results panel")
+    p.add_argument("--out", default=str(PROJECT_ROOT / "web/public/samples.json"))
+    p.set_defaults(func=cmd_export_demo)
 
     args = parser.parse_args(argv)
     return args.func(args)

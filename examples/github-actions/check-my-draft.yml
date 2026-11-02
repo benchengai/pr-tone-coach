@@ -1,0 +1,53 @@
+# Example workflow: check a draft code review comment on demand.
+#
+# Opt-in and author-initiated: it runs only when someone starts it by hand
+# (workflow_dispatch) with their own draft. It does not run on pull request or
+# comment events, never reads other people's comments, and never posts
+# anything: the result goes to the job summary. Anyone with read access to the
+# repository can see job summaries, so for a private draft use the local
+# script (examples/pre-send-check.sh) instead.
+#
+# To use it, copy this file to .github/workflows/ in a repository that contains
+# PR Tone Coach and add an OPENAI_API_KEY secret.
+name: Check my review draft
+
+on:
+  workflow_dispatch:
+    inputs:
+      draft:
+        description: Your draft review comment (it is checked, not posted)
+        required: true
+        type: string
+      model:
+        description: Model
+        required: false
+        default: gpt-6.1-terra
+        type: choice
+        options: [gpt-6-luna, gpt-6.1-terra, gpt-6.1-sol]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Check the draft
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          # Passed through the environment, never interpolated into the script.
+          DRAFT: ${{ inputs.draft }}
+          MODEL: ${{ inputs.model }}
+        run: |
+          printf '%s\n' "$DRAFT" > "$RUNNER_TEMP/draft.md"
+          status=0
+          uv run prtone check --file "$RUNNER_TEMP/draft.md" --model "$MODEL" --recheck --no-color \
+            --fail-on high > "$RUNNER_TEMP/result.txt" || status=$?
+          cat "$RUNNER_TEMP/result.txt"
+          { echo '### Draft check (nothing was posted)'; echo '```'; cat "$RUNNER_TEMP/result.txt"; echo '```'; } \
+            >> "$GITHUB_STEP_SUMMARY"
+          # Status 3 means high risk; report it without failing the job.
+          [ "$status" -eq 0 ] || [ "$status" -eq 3 ]

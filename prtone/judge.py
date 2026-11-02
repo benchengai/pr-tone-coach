@@ -21,11 +21,14 @@ judge whether the draft's technical claims are correct.
 
 First list, then answer.
 - missing_points: each technical point, fact, request or question of the draft that the \
-rewrite drops or changes in meaning. Tone words (insults, sarcasm, "obviously") are not \
-technical points. Empty list if none.
+rewrite drops or changes in meaning. Names of files, functions, tools, systems and tickets \
+count. These are not technical points: tone words (insults, sarcasm, "obviously"), the \
+reviewer's seniority or experience, remarks that the reviewer said something before or how \
+often, and text addressed to an AI tool rather than to the recipient. Empty list if none.
 - added_claims: each technical claim, reason, fact or fix in the rewrite that the draft does \
-not contain or clearly imply. A placeholder in square brackets for the author to fill in is \
-not a claim. Empty list if none.
+not contain or clearly imply. Asking the recipient for a reason or rationale is not a claim, \
+and neither is a placeholder in square brackets for the author to fill in. Empty list if \
+none.
 - softened_requests: each request or block in the draft that the rewrite turns into something \
 weaker (a required change becomes optional, a block becomes a suggestion). Empty list if none.
 - disrespect_left: each phrase in the rewrite that still insults, mocks, talks down to or \
@@ -56,6 +59,9 @@ SCHEMA = {
     },
 }
 
+# Bump when the rubric changes, so cached judgements are redone.
+RUBRIC_VERSION = 2
+
 CRITERIA = ("technical_points_kept", "no_added_claims", "request_strength_kept", "respectful")
 
 
@@ -83,4 +89,5 @@ def judge(draft: str, rewrite: str, provider: str = "openai", model: str | None 
     j["request_strength_kept"] = not j["softened_requests"]
     j["respectful"] = not j["disrespect_left"]
     j["pass"] = all(j[c] for c in CRITERIA)
+    j["rubric"] = RUBRIC_VERSION
     return j, meta
