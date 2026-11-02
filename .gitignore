@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+.DS_Store
+# Bench and check outputs; summaries are written to docs/eval/.
+runs/
+# Third-party datasets are downloaded by scripts/fetch_data.py, not committed.
+data/external/
+web/node_modules/
+web/.next/
+web/out/
