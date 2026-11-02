@@ -133,6 +133,7 @@ def bench(gold_path: Path, specs: list[str], runs: int, out_root: Path, judge_sp
         records = dict(pool.map(job, jobs))
 
     results = {"gold": str(gold_path), "items": len(items), "runs_per_model": runs, "judge": judge_spec,
+               "prompt_sha256": prompt_fingerprint(),
                "judge_runs": judge_runs, "recheck": recheck, "models": {}}
     for spec in specs:
         n = 1 if spec == "rules" else runs
@@ -142,6 +143,16 @@ def bench(gold_path: Path, specs: list[str], runs: int, out_root: Path, judge_sp
         print(f"  {spec}: {n} run(s), {failed} failed item(s)", flush=True)
     _write(out_root / "results.json", results)
     return results
+
+
+def prompt_fingerprint() -> dict:
+    """Hashes of the prompts and schemas, so a results file names the exact prompt version."""
+    import hashlib
+
+    from . import check as check_mod, judge as judge_mod
+
+    digest = lambda *parts: hashlib.sha256(json.dumps(parts, sort_keys=True).encode()).hexdigest()[:12]  # noqa: E731
+    return {"check": digest(check_mod.SYSTEM, check_mod.SCHEMA), "judge": digest(judge_mod.SYSTEM, judge_mod.SCHEMA)}
 
 
 def _flatten(row: dict, prefix: str = "") -> dict:

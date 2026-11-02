@@ -44,7 +44,15 @@ def binary(gold: list[bool], pred: list[bool]) -> dict:
     precision = tp / (tp + fp) if tp + fp else 0.0
     recall = tp / (tp + fn) if tp + fn else 0.0
     f1 = 2 * precision * recall / (precision + recall) if precision + recall else 0.0
-    return {"precision": precision, "recall": recall, "f1": f1, "tp": tp, "fp": fp, "fn": fn, "tn": tn}
+    fpr = fp / (fp + tn) if fp + tn else 0.0
+    return {"precision": precision, "recall": recall, "f1": f1, "fpr": fpr, "tp": tp, "fp": fp, "fn": fn, "tn": tn}
+
+
+def precision_at(prevalence: float, recall: float, fpr: float) -> float | None:
+    """Precision expected at a different base rate than the (balanced) sample:
+    TPR*p / (TPR*p + FPR*(1-p))."""
+    hits, false_alarms = recall * prevalence, fpr * (1 - prevalence)
+    return hits / (hits + false_alarms) if hits + false_alarms else None
 
 
 def gold_spans(item: dict) -> list[tuple[int, int]]:
